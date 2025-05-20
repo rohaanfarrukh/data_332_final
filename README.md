@@ -17,7 +17,7 @@ library(rpart.plot)
 ```
 ## 🧼 Data Cleaning: Boston Crime Dataset
 ```r
-boston_raw <- read_excel("C:/Users/Rooooohan/Documents/data_final/data/boston_crime.xlsx")
+boston_raw <- read_excel("C:/Users/Rooooohan/Documents/data_final/data/boston_crime.xlsx", n_max = 5000)
 
 boston_clean <- boston_raw %>%
   filter(YEAR == 2018) %>%
@@ -41,7 +41,7 @@ boston_clean <- boston_raw %>%
 ```
 ## 🧼 Data Cleaning: Boston Crime Dataset
 ```r
-chicago_raw <- read_csv("C:/Users/Rooooohan/Documents/data_final/data/chicago_crime.csv")
+chicago_raw <- read_csv("C:/Users/Rooooohan/Documents/data_final/data/chicago_crime.csv", n_max = 5000)
 
 chicago_clean <- chicago_raw %>%
   select(`Primary Type`, Description, Date, `Location Description`,
