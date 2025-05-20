@@ -1,4 +1,3 @@
-
 library(shiny)
 library(readxl)
 library(readr)
@@ -11,7 +10,7 @@ library(rpart)
 library(rpart.plot)
 
 
-boston_raw <- read_excel("C:/Users/Rooooohan/Documents/data_final/data/boston_crime.xlsx")
+boston_raw <- read_excel("C:/Users/Rooooohan/Documents/data_final/boston_crime.xlsx", n_max = 5000)
 
 
 boston_clean <- boston_raw %>%
@@ -35,7 +34,7 @@ boston_clean <- boston_raw %>%
   )
 
 
-chicago_raw <- read_csv("C:/Users/Rooooohan/Documents/data_final/data/chicago_crime.csv")
+chicago_raw <- read_csv("C:/Users/Rooooohan/Documents/data_final/chicago_crime.csv", n_max = 5000)
 
 
 chicago_clean <- chicago_raw %>%
@@ -73,7 +72,7 @@ ui <- navbarPage("Crime Comparison: Boston vs Chicago",
                  tabPanel("Project Scope",
                           fluidPage(
                             h3("Project Requirements & Backlog"),
-                            p("This application is part of a Data 332 course project that requires us to join two datasets, create multiple charts, 
+                            p("This application requires us to join two datasets, create multiple charts, 
         implement a map, and optionally include a prediction model. Below are the project goals:"),
                             tags$ul(
                               tags$li("Clean and merge crime data from Boston and Chicago"),
@@ -138,7 +137,7 @@ ui <- navbarPage("Crime Comparison: Boston vs Chicago",
                             p("We built a decision tree to predict arrests in Chicago using crime type and domestic flag."),
                             p("An LLM recommended logistic regression as a comparison model, citing a relevant study:"),
                             p(em("Mohanty, M., & Dey, L. (2022). Predicting arrest likelihood using logistic regression on urban crime datasets.")),
-                            p("Since our dataset and features are similar, this validates our model choice.")
+                            p("Since our dataset and features are similar, this validates our model choice."),
                             
                             br(), hr(), br(),
                             
@@ -234,59 +233,59 @@ server <- function(input, output) {
         popup = ~Description
       )
   })
-
+  
   
   chicago_model <- chicago_clean %>%
     mutate(Hour = hour(Date)) %>%
     select(Arrest, Crime_Type, Location, Domestic) %>%
     filter(!is.na(Arrest))
   
-
+  
   chicago_model$Crime_Type <- as.factor(chicago_model$Crime_Type)
   chicago_model$Location <- as.factor(chicago_model$Location)
   chicago_model$Domestic <- as.factor(chicago_model$Domestic)
   chicago_model$Arrest <- as.factor(chicago_model$Arrest)
   
-
+  
   set.seed(123)
   n <- nrow(chicago_model)
   train_idx <- sample(1:n, 0.8 * n)
   train_data <- chicago_model[train_idx, ]
   test_data <- chicago_model[-train_idx, ]
   
-
+  
   model_tree <- rpart(Arrest ~ Crime_Type + Domestic,
                       data = train_data, method = "class")
   
-
+  
   pred <- predict(model_tree, test_data, type = "class")
   conf_matrix <- table(Predicted = pred, Actual = test_data$Arrest)
   accuracy <- round(sum(diag(conf_matrix)) / sum(conf_matrix) * 100, 2)
   
-
+  
   output$model_summary <- renderPrint({
     cat("Confusion Matrix:\n")
     print(conf_matrix)
     cat("\nModel Accuracy:", accuracy, "%")
   })
   observe({
-  updateSelectInput(inputId = "user_crime", choices = levels(chicago_model$Crime_Type))
-})
-
-observeEvent(input$predict_btn, {
-
-  user_input <- data.frame(
-    Crime_Type = factor(input$user_crime, levels = levels(chicago_model$Crime_Type)),
-    Domestic = factor(input$user_domestic, levels = c("TRUE", "FALSE"))
-  )
-  
-
-  pred_user <- predict(model_tree, user_input, type = "class")
-  
-  output$user_prediction <- renderText({
-    paste("The model predicts:", as.character(pred_user))
+    updateSelectInput(inputId = "user_crime", choices = levels(chicago_model$Crime_Type))
   })
-})
+  
+  observeEvent(input$predict_btn, {
+    
+    user_input <- data.frame(
+      Crime_Type = factor(input$user_crime, levels = levels(chicago_model$Crime_Type)),
+      Domestic = factor(input$user_domestic, levels = c("TRUE", "FALSE"))
+    )
+    
+    
+    pred_user <- predict(model_tree, user_input, type = "class")
+    
+    output$user_prediction <- renderText({
+      paste("The model predicts:", as.character(pred_user))
+    })
+  })
 }
 
 
