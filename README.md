@@ -1,7 +1,7 @@
 # Data 332 Final | Basil & Rohaan
 
 # Crime Analysis
-
+for the shiny app hosting we had a problem as it was hosting but it kept on disconnecting from the server so we could not share the link
 ## 📦 Libraries Used
 ```r
 library(shiny)
